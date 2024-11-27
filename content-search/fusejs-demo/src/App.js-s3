@@ -1,0 +1,69 @@
+import React, { useState, useEffect } from "react";
+import Fuse from "fuse.js";
+
+const App = () => {
+    // Sample data for images and file names
+    const [items, setItems] = useState([]);
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState([]);
+
+    useEffect(() => {
+        // Simulating fetching data from AWS S3 (You can use AWS SDK or your API here)
+        const fetchedItems = [
+            { title: "Apple", description: "A fruit that is sweet and crispy.", imageUrl: "https://your-bucket-name.s3.amazonaws.com/apple.jpg" },
+            { title: "Banana", description: "A yellow fruit rich in potassium.", imageUrl: "https://your-bucket-name.s3.amazonaws.com/banana.jpg" },
+            { title: "Orange", description: "A citrus fruit high in vitamin C.", imageUrl: "https://your-bucket-name.s3.amazonaws.com/orange.jpg" },
+            { title: "Pineapple", description: "A tropical fruit with spiky skin.", imageUrl: "https://your-bucket-name.s3.amazonaws.com/pineapple.jpg" },
+        ];
+        setItems(fetchedItems);
+        setResults(fetchedItems);
+    }, []);
+
+    // Fuse.js search options
+    const options = {
+        keys: ["title", "description"],
+        threshold: 0.4,
+    };
+
+    const fuse = new Fuse(items, options);
+
+    const handleSearch = (e) => {
+        const input = e.target.value;
+        setQuery(input);
+
+        if (input.trim()) {
+            const fuseResults = fuse.search(input).map((result) => result.item);
+            setResults(fuseResults);
+        } else {
+            setResults(items); // Reset results when query is cleared
+        }
+    };
+
+    return (
+        <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+            <h1>Fuse.js Search with S3 Images</h1>
+            <input
+                type="text"
+                value={query}
+                onChange={handleSearch}
+                placeholder="Search images..."
+                style={{
+                    width: "100%",
+                    padding: "10px",
+                    marginBottom: "20px",
+                    fontSize: "16px",
+                }}
+            />
+            <ul>
+                {results.map((item, index) => (
+                    <li key={index} style={{ marginBottom: "10px" }}>
+                        <img src={item.imageUrl} alt={item.title} style={{ width: "100px", height: "100px", marginRight: "10px" }} />
+                        <strong>{item.title}</strong>: {item.description}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
+export default App;
